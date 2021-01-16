@@ -23,6 +23,7 @@ typedef struct
 {
 	int s, E, b;
 	struct set *sets;
+        int miss,hit;
 
 } Cache;
 
