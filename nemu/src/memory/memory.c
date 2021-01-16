@@ -40,15 +40,16 @@ void hwaddr_write(hwaddr_t addr, size_t len, uint32_t data)
         //printf("Write\n");
 	if (addr + len > up)
 	{
-		f = write_cahce(addr, up - addr, data);
+                printf("Hi\n");
+		f = write_cahce(addr, up - addr, data>> (up - addr) * 8);
 		if (!f)
 		{
 			dram_write(addr, up - addr, data);
 		}
-		f = write_cahce(up, addr + len - up, data);
+		f = write_cahce(up, addr + len - up, data >> (up - addr) * 8);
 		if (!f)
 		{
-			dram_write(addr, addr + len - up, data);
+			dram_write(addr, addr + len - up, data >> (up - addr) * 8);
 		}
 	}
 	f = write_cahce(addr, len, data);
@@ -100,7 +101,7 @@ uint32_t read_cache(hwaddr_t addr, size_t len, bool *flag)
 			if (len == 4)
 				return *((uint32_t *)(set->blocks[i].buf + off));
                         if (len == 3)
-				return *((uint32_t *)(set->blocks[i].buf + off)) & 0xffffff;
+				return *((uint32_t *)(set->blocks[i].buf + off - 1)) >> 8;
 			if (len == 2)
 				return *((uint16_t *)(set->blocks[i].buf + off));
 			if (len == 1)
@@ -130,7 +131,7 @@ uint32_t read_cache(hwaddr_t addr, size_t len, bool *flag)
 	if (len == 4)
 		return *((uint32_t *)(set->blocks[i].buf + off));
         if (len == 3)
-		return *((uint32_t *)(set->blocks[i].buf + off)) & 0xffffff;
+		return *((uint32_t *)(set->blocks[i].buf + off - 1)) >> 8;
 	if (len == 2)
 		return *((uint16_t *)(set->blocks[i].buf + off));
 	if (len == 1)
@@ -154,8 +155,15 @@ bool write_cahce(hwaddr_t addr, size_t len, uint32_t data)
 		{
 			if (len == 4)
 				*((uint32_t *)(set->blocks[i].buf + off)) = data;
+                         if (len == 3)
+			{
+				*((uint8_t *)(set->blocks[i].buf + off)) = data & 0xff;
+				*((uint8_t *)(set->blocks[i].buf + off + 1)) = (data >> 8) & 0xff;
+				*((uint8_t *)(set->blocks[i].buf + off + 2)) = (data >> 16) & 0xff;
+			} 
 			if (len == 2)
 				*((uint16_t *)(set->blocks[i].buf + off)) = data;
+                      
 			if (len == 1)
 				*((uint8_t *)(set->blocks[i].buf + off)) = data;
 			dram_write(addr, len, data);
