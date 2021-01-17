@@ -179,7 +179,6 @@ uint32_t read_cache2(hwaddr_t addr, size_t len, bool *flag)
 	E = cpu.cache2.E;
 	set = &cpu.cache2.sets[index];
 	printf("Read\n");
-
 	for (i = 0; i < E && set->blocks[i].valid == true; i++)
 	{
 		if (set->blocks[i].tag == tag)
@@ -202,6 +201,7 @@ uint32_t read_cache2(hwaddr_t addr, size_t len, bool *flag)
 	{
 		set->blocks[i].valid = true;
 		set->blocks[i].tag = tag;
+		printf("P1:0x%x\n",addr-off);
 		for (j = 0; j < (1 << cpu.cache2.b); j++)
 		{
 			set->blocks[i].buf[j] = dram_read(addr - off + j, 1) & 255;
@@ -216,18 +216,16 @@ uint32_t read_cache2(hwaddr_t addr, size_t len, bool *flag)
 			{
 				dram_write((tag << (cpu.cache2.s + cpu.cache2.b)) + (index << cpu.cache2.b) + j, 1, set->blocks[i].buf[j]);
 			}
+			set->blocks[i].dirty = false;
 		}
 		set->blocks[i].tag = tag;
-		for (j = 0; j < (1 << cpu.cache2.b); j++)
-		{
-			set->blocks[i].buf[j] = dram_read(addr - off + j, 1) & 255;
-		}
-		set->blocks[i].tag = tag;
+		printf("P2\n");
 		for (j = 0; j < (1 << cpu.cache2.b); j++)
 		{
 			set->blocks[i].buf[j] = dram_read(addr - off + j, 1) & 255;
 		}
 	}
+	printf("P3\n");
 	if (len == 4)
 		return *((uint32_t *)(set->blocks[i].buf + off));
 	if (len == 3)
@@ -249,7 +247,6 @@ bool write_cahce2(hwaddr_t addr, size_t len, uint32_t data)
 	E = cpu.cache2.E;
 	set = &cpu.cache2.sets[index];
 	printf("Write\n");
-
 	for (i = 0; i < E && set->blocks[i].valid == true; i++)
 	{
 		if (set->blocks[i].tag == tag)
@@ -291,6 +288,7 @@ bool write_cahce2(hwaddr_t addr, size_t len, uint32_t data)
 			{
 				dram_write((tag << (cpu.cache2.s + cpu.cache2.b)) + (index << cpu.cache2.b) + j, 1, set->blocks[i].buf[j]);
 			}
+			set->blocks[i].dirty = false;
 		}
 		set->blocks[i].tag = tag;
 		for (j = 0; j < (1 << cpu.cache2.b); j++)
