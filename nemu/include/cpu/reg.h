@@ -10,6 +10,7 @@ enum { R_AL, R_CL, R_DL, R_BL, R_AH, R_CH, R_DH, R_BH };
 struct block
 {
 	bool valid;
+        bool dirty;
 	uint32_t tag;
 	uint8_t *buf;
 };
@@ -73,6 +74,7 @@ typedef struct {
 		uint32_t val;
 	} eflags;
         Cache cache1;
+        Cache cache2;
 
 } CPU_state;
 
