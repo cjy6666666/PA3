@@ -120,6 +120,7 @@ void restart() {
 			cpu.cache2.sets[i].blocks[j].dirty = false;
 		}
 	}
+        cpu.CR0.val=0;
 
 	/* Initialize DRAM. */
 	init_ddr3();
